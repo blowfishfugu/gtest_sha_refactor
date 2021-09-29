@@ -8,6 +8,7 @@ using string = std::string;
 namespace
 {
 	constexpr const __int64 repeat = 100000;
+	//sample-results from zedwood.com, thegrap_mod* should have same results as thegraph_orig
 	const string input = "grape";
 	const string expected224 = "571f3896fb694dc268b032d7940dabbfbcd7ee64c07f45c01c9e64db";
 	const string expected256 = "0f78fcc486f5315418fbf095e71c0675ee07d318e5ac4d150050cd8e57966496";
