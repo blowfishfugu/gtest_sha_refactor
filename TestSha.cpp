@@ -8,7 +8,7 @@ using string = std::string;
 namespace
 {
 	constexpr const __int64 repeat = 100000;
-	//sample-results from zedwood.com, thegrap_mod* should have same results as thegraph_orig
+	//sample-results from zedwood.com, thegrape_mod* should have same results as thegrape_orig*
 	const string input = "grape";
 	const string expected224 = "571f3896fb694dc268b032d7940dabbfbcd7ee64c07f45c01c9e64db";
 	const string expected256 = "0f78fcc486f5315418fbf095e71c0675ee07d318e5ac4d150050cd8e57966496";
@@ -16,6 +16,20 @@ namespace
 	const string expected512 = "9375d1abdb644a01955bccad12e2f5c2bd8a3e226187e548d99c559a99461453b980123746753d07c169c22a5d9cc75cb158f0e8d8c0e713559775b5e1391fc4";
 }
 
+TEST(ShaTest, thegrape_sizestats)
+{
+	constexpr const size_t szSha__2_orig = sizeof(sha_orig::SHA2);
+	constexpr const size_t szSha224_orig = sizeof(sha_orig::SHA224);
+	constexpr const size_t szSha256_orig = sizeof(sha_orig::SHA256);
+	constexpr const size_t szSha384_orig = sizeof(sha_orig::SHA384);
+	constexpr const size_t szSha512_orig = sizeof(sha_orig::SHA512);
+
+	constexpr const size_t szSha__2_mod = sizeof(sha_mod::SHA2<1,1,short>);
+	constexpr const size_t szSha224_mod = sizeof(sha_mod::SHA224);
+	constexpr const size_t szSha256_mod = sizeof(sha_mod::SHA256);
+	constexpr const size_t szSha384_mod = sizeof(sha_mod::SHA384);
+	constexpr const size_t szSha512_mod = sizeof(sha_mod::SHA512);
+}
 
 TEST( ShaTest, thegrape_orig512 )
 {

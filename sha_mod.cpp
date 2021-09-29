@@ -1,13 +1,10 @@
 #include "stdafx.h"
-
-#include <cstring>
-#include <fstream>
 #include "sha_mod.h"
 
 namespace sha_mod
 {
 
-	const unsigned int sha256_k[ 64 ] = //UL = uint32
+	constexpr const unsigned int sha256_k[ 64 ] = //UL = uint32
 	{ 0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
 	 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
 	 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
@@ -24,7 +21,7 @@ namespace sha_mod
 	 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
 	 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
 	 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2 };
-	const unsigned long long sha512_k[ 80 ] = //ULL = uint64
+	constexpr const unsigned long long sha512_k[ 80 ] = //ULL = uint64
 	{ 0x428a2f98d728ae22ULL, 0x7137449123ef65cdULL,
 	 0xb5c0fbcfec4d3b2fULL, 0xe9b5dba58189dbbcULL,
 	 0x3956c25bf348b538ULL, 0x59f111f1b605d019ULL,
@@ -81,51 +78,6 @@ namespace sha_mod
 		m_tot_len = 0;
 	}
 
-	void SHA224::transform( const unsigned char* message, unsigned int block_nb ) 
-	{
-		uint32 w[ 64 ];
-		uint32 wv[ 8 ];
-		uint32 t1, t2;
-		const unsigned char* sub_block;
-		int i;
-		int j;
-		for( i = 0; i < (int)block_nb; i++ )
-		{
-			sub_block = message + ( i << 6 );
-			for( j = 0; j < 16; j++ )
-			{
-				pack( &sub_block[ j << 2 ], w[ j ] );
-			}
-			for( j = 16; j < 64; j++ )
-			{
-				w[ j ] = SHA256_F4( w[ j - 2 ] ) + w[ j - 7 ] + SHA256_F3( w[ j - 15 ] ) + w[ j - 16 ];
-			}
-			for( j = 0; j < 8; j++ )
-			{
-				wv[ j ] = m_h[ j ];
-			}
-			for( j = 0; j < 64; j++ )
-			{
-				t1 = wv[ 7 ] + SHA256_F2( wv[ 4 ] ) + SHA2_CH( wv[ 4 ], wv[ 5 ], wv[ 6 ] )
-					+ sha256_k[ j ] + w[ j ];
-				t2 = SHA256_F1( wv[ 0 ] ) + SHA2_MAJ( wv[ 0 ], wv[ 1 ], wv[ 2 ] );
-				wv[ 7 ] = wv[ 6 ];
-				wv[ 6 ] = wv[ 5 ];
-				wv[ 5 ] = wv[ 4 ];
-				wv[ 4 ] = wv[ 3 ] + t1;
-				wv[ 3 ] = wv[ 2 ];
-				wv[ 2 ] = wv[ 1 ];
-				wv[ 1 ] = wv[ 0 ];
-				wv[ 0 ] = t1 + t2;
-			}
-			for( j = 0; j < 8; j++ )
-			{
-				m_h[ j ] += wv[ j ];
-			}
-		}
-	}
-
-
 	void SHA224::update( const unsigned char* message, unsigned int len )
 	{
 		unsigned int block_nb;
@@ -170,7 +122,7 @@ namespace sha_mod
 		}
 	}
 
-	void SHA256::transform( const unsigned char* message, unsigned int block_nb )
+	void SHA224::transform( const unsigned char* message, unsigned int block_nb ) 
 	{
 		uint32 w[ 64 ];
 		uint32 wv[ 8 ];
@@ -213,6 +165,7 @@ namespace sha_mod
 			}
 		}
 	}
+
 
 	void SHA256::init()
 	{
@@ -272,6 +225,51 @@ namespace sha_mod
 			unpack( m_h[ i ], &m_digest[ i << 2 ] );
 		}
 	}
+
+	void SHA256::transform( const unsigned char* message, unsigned int block_nb )
+	{
+		uint32 w[ 64 ];
+		uint32 wv[ 8 ];
+		uint32 t1, t2;
+		const unsigned char* sub_block;
+		int i;
+		int j;
+		for( i = 0; i < (int)block_nb; i++ )
+		{
+			sub_block = message + ( i << 6 );
+			for( j = 0; j < 16; j++ )
+			{
+				pack( &sub_block[ j << 2 ], w[ j ] );
+			}
+			for( j = 16; j < 64; j++ )
+			{
+				w[ j ] = SHA256_F4( w[ j - 2 ] ) + w[ j - 7 ] + SHA256_F3( w[ j - 15 ] ) + w[ j - 16 ];
+			}
+			for( j = 0; j < 8; j++ )
+			{
+				wv[ j ] = m_h[ j ];
+			}
+			for( j = 0; j < 64; j++ )
+			{
+				t1 = wv[ 7 ] + SHA256_F2( wv[ 4 ] ) + SHA2_CH( wv[ 4 ], wv[ 5 ], wv[ 6 ] )
+					+ sha256_k[ j ] + w[ j ];
+				t2 = SHA256_F1( wv[ 0 ] ) + SHA2_MAJ( wv[ 0 ], wv[ 1 ], wv[ 2 ] );
+				wv[ 7 ] = wv[ 6 ];
+				wv[ 6 ] = wv[ 5 ];
+				wv[ 5 ] = wv[ 4 ];
+				wv[ 4 ] = wv[ 3 ] + t1;
+				wv[ 3 ] = wv[ 2 ];
+				wv[ 2 ] = wv[ 1 ];
+				wv[ 1 ] = wv[ 0 ];
+				wv[ 0 ] = t1 + t2;
+			}
+			for( j = 0; j < 8; j++ )
+			{
+				m_h[ j ] += wv[ j ];
+			}
+		}
+	}
+
 
 	void SHA384::init()
 	{
@@ -377,50 +375,6 @@ namespace sha_mod
 	}
 
 
-	void SHA512::transform( const unsigned char* message, unsigned int block_nb )
-	{
-		uint64 w[ 80 ];
-		uint64 wv[ 8 ];
-		uint64 t1, t2;
-		const unsigned char* sub_block;
-		int i, j;
-		for( i = 0; i < (int)block_nb; i++ )
-		{
-			sub_block = message + ( i << 7 );
-			for( j = 0; j < 16; j++ )
-			{
-				pack( &sub_block[ j << 3 ], w[ j ] );
-			}
-			for( j = 16; j < 80; j++ )
-			{
-				w[ j ] = SHA512_F4( w[ j - 2 ] ) + w[ j - 7 ] + SHA512_F3( w[ j - 15 ] ) + w[ j - 16 ];
-			}
-			for( j = 0; j < 8; j++ )
-			{
-				wv[ j ] = m_h[ j ];
-			}
-			for( j = 0; j < 80; j++ )
-			{
-				t1 = wv[ 7 ] + SHA512_F2( wv[ 4 ] ) + SHA2_CH( wv[ 4 ], wv[ 5 ], wv[ 6 ] )
-					+ sha512_k[ j ] + w[ j ];
-				t2 = SHA512_F1( wv[ 0 ] ) + SHA2_MAJ( wv[ 0 ], wv[ 1 ], wv[ 2 ] );
-				wv[ 7 ] = wv[ 6 ];
-				wv[ 6 ] = wv[ 5 ];
-				wv[ 5 ] = wv[ 4 ];
-				wv[ 4 ] = wv[ 3 ] + t1;
-				wv[ 3 ] = wv[ 2 ];
-				wv[ 2 ] = wv[ 1 ];
-				wv[ 1 ] = wv[ 0 ];
-				wv[ 0 ] = t1 + t2;
-			}
-			for( j = 0; j < 8; j++ )
-			{
-				m_h[ j ] += wv[ j ];
-			}
-
-		}
-	}
-
 	void SHA512::init()
 	{
 		memset( m_digest, 0, sizeof( m_digest ) );
@@ -480,17 +434,60 @@ namespace sha_mod
 		}
 	}
 
+	void SHA512::transform( const unsigned char* message, unsigned int block_nb )
+	{
+		uint64 w[ 80 ];
+		uint64 wv[ 8 ];
+		uint64 t1, t2;
+		const unsigned char* sub_block;
+		int i, j;
+		for( i = 0; i < (int)block_nb; i++ )
+		{
+			sub_block = message + ( i << 7 );
+			for( j = 0; j < 16; j++ )
+			{
+				pack( &sub_block[ j << 3 ], w[ j ] );
+			}
+			for( j = 16; j < 80; j++ )
+			{
+				w[ j ] = SHA512_F4( w[ j - 2 ] ) + w[ j - 7 ] + SHA512_F3( w[ j - 15 ] ) + w[ j - 16 ];
+			}
+			for( j = 0; j < 8; j++ )
+			{
+				wv[ j ] = m_h[ j ];
+			}
+			for( j = 0; j < 80; j++ )
+			{
+				t1 = wv[ 7 ] + SHA512_F2( wv[ 4 ] ) + SHA2_CH( wv[ 4 ], wv[ 5 ], wv[ 6 ] )
+					+ sha512_k[ j ] + w[ j ];
+				t2 = SHA512_F1( wv[ 0 ] ) + SHA2_MAJ( wv[ 0 ], wv[ 1 ], wv[ 2 ] );
+				wv[ 7 ] = wv[ 6 ];
+				wv[ 6 ] = wv[ 5 ];
+				wv[ 5 ] = wv[ 4 ];
+				wv[ 4 ] = wv[ 3 ] + t1;
+				wv[ 3 ] = wv[ 2 ];
+				wv[ 2 ] = wv[ 1 ];
+				wv[ 1 ] = wv[ 0 ];
+				wv[ 0 ] = t1 + t2;
+			}
+			for( j = 0; j < 8; j++ )
+			{
+				m_h[ j ] += wv[ j ];
+			}
+
+		}
+	}
 	
 	std::string sha224( std::string input )
 	{
-		SHA224 ctx = SHA224();
+		SHA224 ctx;
 		ctx.calculate( (unsigned char*)input.c_str(), (unsigned int)input.length() );
 		return ctx.toHexString();
 	}
 
 	std::string sha256( std::string input )
 	{
-		SHA256 ctx = SHA256();
+		SHA256 ctx;
 		ctx.calculate( (unsigned char*)input.c_str(), (unsigned int)input.length() );
 		return ctx.toHexString();
 	}
@@ -498,14 +495,14 @@ namespace sha_mod
 	std::string sha384( std::string input )
 	{
 		
-		SHA384 ctx = SHA384();
+		SHA384 ctx;
 		ctx.calculate( (unsigned char*)input.c_str(), (unsigned int)input.length() );
 		return ctx.toHexString();
 	}
 
 	std::string sha512( std::string input )
 	{
-		SHA512 ctx = SHA512();
+		SHA512 ctx;
 		ctx.calculate( (unsigned char*)input.c_str(), (unsigned int)input.length() );
 		return ctx.toHexString();
 	}

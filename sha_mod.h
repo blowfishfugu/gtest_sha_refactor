@@ -2,18 +2,14 @@
 #pragma once
 
 #include <string>
+#include <vector>
 namespace sha_mod
 {
     template<size_t blocksize,size_t digestsize, typename seed_type>
     class SHA2
     {
     public:
-        void calculate( const unsigned char* message, unsigned int len )
-        {
-            this->init();
-            this->update( message, len );
-            this->final();
-        }
+		void calculate(const unsigned char* message, unsigned int len);
         std::string toHexString();
         void getDigest( std::vector<unsigned char>& digest );
 
@@ -28,9 +24,9 @@ namespace sha_mod
         virtual void transform( const unsigned char* message, unsigned int block_nb ) = 0;
 
         const unsigned int m_block_size = blocksize;
-        uint8 m_digest[ digestsize ]{};
         unsigned char m_block[ 2 * blocksize ]{};
         seed_type m_h[ 8 ]{};
+        uint8 m_digest[ digestsize ]{};
         unsigned int m_tot_len=0;
         unsigned int m_len=0;
 
@@ -49,7 +45,8 @@ namespace sha_mod
     constexpr const unsigned int SHA256_DIGEST_SIZE = ( 256 / 8 );
     constexpr const unsigned int SHA224_DIGEST_SIZE = ( 224 / 8 );
 
-    class SHA256 : public SHA2<SHA224_256_BLOCK_SIZE,SHA256_DIGEST_SIZE, unsigned int>
+    class SHA256 
+		: public SHA2<SHA224_256_BLOCK_SIZE,SHA256_DIGEST_SIZE, unsigned int>
     {
     public:
         void init() override;
@@ -60,7 +57,8 @@ namespace sha_mod
     };
 
 
-    class SHA224 : public SHA2<SHA224_256_BLOCK_SIZE,SHA224_DIGEST_SIZE, unsigned int>
+    class SHA224 
+		: public SHA2<SHA224_256_BLOCK_SIZE,SHA224_DIGEST_SIZE, unsigned int>
     {
     public:
         void init() override;
@@ -70,21 +68,24 @@ namespace sha_mod
         void transform( const unsigned char* message, unsigned int block_nb ) override;
     };
 
-        constexpr const unsigned int SHA384_512_BLOCK_SIZE = ( 1024 / 8 );
-        constexpr const unsigned int SHA512_DIGEST_SIZE = ( 512 / 8 );
+
+    constexpr const unsigned int SHA384_512_BLOCK_SIZE = ( 1024 / 8 );
+    constexpr const unsigned int SHA512_DIGEST_SIZE = ( 512 / 8 );
     constexpr const unsigned int SHA384_DIGEST_SIZE = ( 384 / 8 );
 
-    class SHA512 : public SHA2<SHA384_512_BLOCK_SIZE,SHA512_DIGEST_SIZE, unsigned long long>
+    class SHA512 
+		: public SHA2<SHA384_512_BLOCK_SIZE,SHA512_DIGEST_SIZE, unsigned long long>
     {
     public:
         void init() override;
         void update( const unsigned char* message, unsigned int len ) override;
         void final() override;
     protected:
-        void transform( const unsigned char* message, unsigned int block_nb );
+        void transform( const unsigned char* message, unsigned int block_nb ) override;
     };
 
-    class SHA384 : public SHA2<SHA384_512_BLOCK_SIZE,SHA384_DIGEST_SIZE, unsigned long long>
+    class SHA384 
+		: public SHA2<SHA384_512_BLOCK_SIZE,SHA384_DIGEST_SIZE, unsigned long long>
     {
     public:
         void init();
@@ -119,20 +120,10 @@ namespace sha_mod
 
 
 
-    // %02x
-    template<size_t blocksize, size_t digestsize, typename seed_type>
-    void SHA2<blocksize, digestsize, seed_type>::fillHex( unsigned char c, char& pos1, char& pos2 )
-    {
-        static const char* hex = "0123456789abcdef";
-
-        const short lower = ( c & 0x0F );
-        const short upper = ( c & 0xF0 ) >> 4;
-        pos1 = hex[ upper ];
-        pos2 = hex[ lower ];
-    }
 
     template<size_t blocksize, size_t digestsize, typename seed_type>
-    void SHA2<blocksize, digestsize, seed_type>::unpack( uint32 x, unsigned char* str )
+    void SHA2<blocksize, digestsize, seed_type>
+		::unpack( uint32 x, unsigned char* str )
     {
         *( (str)+3 ) = (uint8)( ( x ) );
         *( (str)+2 ) = (uint8)( ( x ) >> 8 );
@@ -141,7 +132,8 @@ namespace sha_mod
     }
 
     template<size_t blocksize, size_t digestsize, typename seed_type>
-    void SHA2<blocksize, digestsize, seed_type>::pack( const unsigned char* str, uint32& x )
+    void SHA2<blocksize, digestsize, seed_type>
+		::pack( const unsigned char* str, uint32& x )
     {
         x = ( ( uint32 ) * ( (str)+3 ) )
             | ( ( uint32 ) * ( (str)+2 ) << 8 )
@@ -150,7 +142,8 @@ namespace sha_mod
     }
 
     template<size_t blocksize, size_t digestsize, typename seed_type>
-    void SHA2<blocksize, digestsize, seed_type>::unpack( uint64 x, unsigned char* str )
+    void SHA2<blocksize, digestsize, seed_type>
+		::unpack( uint64 x, unsigned char* str )
     {
         *( (str)+7 ) = (uint8)( ( x ) );
         *( (str)+6 ) = (uint8)( ( x ) >> 8 );
@@ -163,7 +156,8 @@ namespace sha_mod
     }
 
     template<size_t blocksize, size_t digestsize, typename seed_type>
-    void SHA2<blocksize, digestsize, seed_type>::pack( const unsigned char* str, uint64& x )
+    void SHA2<blocksize, digestsize, seed_type>
+		::pack( const unsigned char* str, uint64& x )
     {
         x = ( ( uint64 ) * ( (str)+7 ) )
             | ( ( uint64 ) * ( (str)+6 ) << 8 )
@@ -174,9 +168,32 @@ namespace sha_mod
             | ( ( uint64 ) * ( (str)+1 ) << 48 )
             | ( ( uint64 ) * ( (str)+0 ) << 56 );
     }
-
+    
+	// %02x
     template<size_t blocksize, size_t digestsize, typename seed_type>
-    std::string SHA2<blocksize, digestsize, seed_type>::toHexString()
+    void SHA2<blocksize, digestsize, seed_type>
+		::fillHex( unsigned char c, char& pos1, char& pos2 )
+    {
+        static const char* hex = "0123456789abcdef";
+
+        const short lower = ( c & 0x0F );
+        const short upper = ( c & 0xF0 ) >> 4;
+        pos1 = hex[ upper ];
+        pos2 = hex[ lower ];
+    }
+
+	template<size_t blocksize, size_t digestsize, typename seed_type>
+	void SHA2<blocksize, digestsize, seed_type>
+		::calculate(const unsigned char * message, unsigned int len)
+	{
+		this->init();
+		this->update(message, len);
+		this->final();
+	}
+
+	template<size_t blocksize, size_t digestsize, typename seed_type>
+    std::string SHA2<blocksize, digestsize, seed_type>
+		::toHexString()
     {
         char buf[ ( 2 * digestsize ) + 1 ]{};
         char* t = &buf[ 0 ];
@@ -191,7 +208,8 @@ namespace sha_mod
     }
 
     template<size_t blocksize, size_t digestsize, typename seed_type>
-    void SHA2<blocksize, digestsize, seed_type>::getDigest( std::vector<SHA2::uint8>& digest )
+    void SHA2<blocksize, digestsize, seed_type>
+		::getDigest( std::vector<SHA2::uint8>& digest )
     {
         digest.reserve( digestsize );
         for( int i = 0; i < digestsize; ++i )

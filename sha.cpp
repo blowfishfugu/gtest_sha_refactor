@@ -1,7 +1,4 @@
 #include "stdafx.h"
-
-#include <cstring>
-#include <fstream>
 #include "sha.h"
 
 namespace sha_orig
